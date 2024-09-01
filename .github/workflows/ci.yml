@@ -1,0 +1,53 @@
+name: Build project
+
+on:
+  push:
+    branches: [ previous1 ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ previous1 ]
+
+
+jobs:
+  codeql_analysis:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: javascript
+
+      - name: Build and analyze
+        uses: github/codeql-action/analyze@v1
+        with:
+          query: codeql-query.ql
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: my-concurrency-group
+      cancel-in-progress: true
+    steps:
+
+      - name: test1
+        run: |
+          if [[ "${{ secrets.ARTIFACTORY_API_KEY }}" == "123" ]];then
+            echo "是123"
+            echo "1:${{ env.API_KEY }}"
+            # 运行代码 A 的逻辑...
+          else
+            echo "其他"
+            echo "2:${{ env.API_KEY }}"
+            # 运行代码 B 的逻辑...
+          fi
+        
+        env:
+
+          API_KEY: ${{ secrets.GITHUB_TOKEN }}
